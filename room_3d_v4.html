@@ -3,45 +3,38 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>3D Room — v4 (5° slope + flat ceiling)</title>
+<title>3D Ames Room — v6 (corrected)</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   body { margin: 0; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #0a0a0c; touch-action: none; color: #fff; }
   #canvas-container { position: absolute; inset: 0; }
-
   .panel {
-    position: absolute;
-    background: rgba(18, 18, 24, 0.82);
+    position: absolute; background: rgba(18, 18, 24, 0.84);
     backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
     border: 1px solid rgba(255,255,255,0.08);
     border-radius: 12px; color: #fff;
     box-shadow: 0 8px 32px rgba(0,0,0,0.4);
   }
-  #info { top: 14px; left: 14px; padding: 14px 16px; max-width: 290px; font-size: 12px; line-height: 1.6; }
-  #info h3 { font-size: 10px; font-weight: 700; letter-spacing: 1.3px; text-transform: uppercase; opacity: 0.55; margin-bottom: 10px; }
-  .legend-item { display: flex; align-items: center; margin: 6px 0; font-size: 12.5px; }
+  #info { top: 14px; left: 14px; padding: 14px 16px; max-width: 285px; font-size: 12px; line-height: 1.6; }
+  #info h3 { font-size: 10px; font-weight: 700; letter-spacing: 1.3px; text-transform: uppercase; opacity: 0.6; margin-bottom: 8px; color: #ffb088; }
+  #info h3.sub { color: rgba(255,255,255,0.55); margin-top: 12px; }
+  .legend-item { display: flex; align-items: center; margin: 5px 0; font-size: 12.5px; }
   .swatch { width: 12px; height: 12px; border-radius: 3px; margin-right: 10px; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 1px 2px rgba(0,0,0,0.3); }
-  .tag { display: inline-block; padding: 1px 7px; border-radius: 4px; font-size: 10.5px; font-weight: 600; margin-left: 4px; }
-  .tag-ok { background: rgba(46,204,113,0.2); color: #7fe4a8; border: 1px solid rgba(46,204,113,0.35); }
-  .tag-warn { background: rgba(255,120,85,0.2); color: #ffa088; border: 1px solid rgba(255,120,85,0.35); }
-  .note { margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 11px; opacity: 0.75; line-height: 1.55; }
-  .note b { color: #ffa088; }
-
   #controls-hint { bottom: 14px; left: 14px; padding: 10px 14px; font-size: 11px; opacity: 0.72; }
-
-  #view-buttons { position: absolute; top: 14px; right: 14px; display: flex; flex-direction: column; gap: 7px; }
+  #view-buttons { position: absolute; top: 14px; right: 14px; display: flex; flex-direction: column; gap: 7px; max-height: calc(100vh - 28px); overflow-y: auto; }
   #view-buttons button {
-    background: rgba(18,18,24,0.82); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    background: rgba(18,18,24,0.84); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
     color: #fff; border: 1px solid rgba(255,255,255,0.1);
     padding: 10px 14px; border-radius: 9px;
     font-size: 11.5px; font-weight: 500; cursor: pointer;
-    transition: all 0.2s; min-width: 135px; text-align: left;
+    transition: all 0.2s; min-width: 150px; text-align: left;
     box-shadow: 0 4px 16px rgba(0,0,0,0.25);
   }
   #view-buttons button:hover { background: rgba(55,55,70,0.88); border-color: rgba(255,255,255,0.2); }
   #view-buttons button:active { transform: scale(0.97); }
-  #view-buttons button.active { background: rgba(100,160,255,0.22); border-color: rgba(100,160,255,0.55); color: #b8d4ff; }
-
+  #view-buttons button.active { background: rgba(255,140,95,0.22); border-color: rgba(255,140,95,0.55); color: #ffc8a8; }
+  #view-buttons button.highlight { background: rgba(255,100,75,0.25); border-color: rgba(255,100,75,0.55); color: #ffd4c0; font-weight: 600; }
+  #view-buttons button.highlight.active { background: rgba(255,100,75,0.4); }
   #axis-helper {
     position: absolute; bottom: 14px; right: 14px;
     width: 80px; height: 80px;
@@ -56,28 +49,29 @@
 <div id="canvas-container"></div>
 
 <div id="info" class="panel">
-  <h3>Room Layout v4</h3>
-  <div class="legend-item"><div class="swatch" style="background:#a88558"></div>B — Floor <span class="tag tag-warn">5° tilt</span></div>
-  <div class="legend-item"><div class="swatch" style="background:#4A90E2"></div>C — 2.83×1.83 <span class="tag tag-ok">fixed</span></div>
-  <div class="legend-item"><div class="swatch" style="background:#E74C3C"></div>A — R:1.83m, L:<b style="color:#ffa088">1.50m</b></div>
-  <div class="legend-item"><div class="swatch" style="background:#2ECC71"></div>D — R:<b style="color:#ffa088">1.50m</b>, L:<b style="color:#ffa088">1.58m</b></div>
-  <div class="legend-item"><div class="swatch" style="background:#F39C12;opacity:0.5"></div>Ceiling — flat 1.83m ✓</div>
-  <div class="note">
-    5° slope rises from V1-V2 edge toward V3 corner.<br>
-    V3 rises <b>0.33m</b>, V4 rises <b>0.25m</b>.<br>
-    Top edges match spec (4.33m + 5m) ✓<br>
-    Tall 3m corner from original spec is <b>gone</b>.
+  <h3>Ames Room — v6</h3>
+  <div class="legend-item"><div class="swatch" style="background:#a88558"></div>B — Floor, 5° tilt</div>
+  <div class="legend-item"><div class="swatch" style="background:#4A90E2"></div>C — 1.83×2.83 ✓</div>
+  <div class="legend-item"><div class="swatch" style="background:#E74C3C"></div>A — 4.33/1.83/4.33/3 ✓</div>
+  <div class="legend-item"><div class="swatch" style="background:#2ECC71"></div>D — 5/3/5/1.83 ✓</div>
+  <div class="legend-item"><div class="swatch" style="background:#F39C12;opacity:0.5"></div>Ceiling (tilted)</div>
+  <div class="legend-item"><div class="swatch" style="background:#444"></div>Camera position</div>
+  <div class="legend-item"><div class="swatch" style="background:#e8d5b0"></div>People, 1.7m each</div>
+  <h3 class="sub">Ames Mechanism</h3>
+  <div style="font-size:11.5px; opacity:0.82; line-height:1.55;">
+    Walls <b style="color:#ffb088;">A</b> and <b style="color:#ffb088;">D</b> lean slightly. T3 shifted <b>~13cm</b> inward from directly above V3; T4 shifted <b>~12cm</b>. This is what makes top edges equal 4.33m &amp; 5m while sides stay 1.83m &amp; 3m.
   </div>
 </div>
 
-<div id="controls-hint" class="panel">Drag rotate · Pinch/scroll zoom</div>
+<div id="controls-hint" class="panel">Drag rotate · Pinch trackpad or scroll to zoom</div>
 
 <div id="view-buttons">
   <button onclick="setView('iso', this)" class="active">⬢ Isometric</button>
-  <button onclick="setView('top', this)">⬜ Top (Plan)</button>
-  <button onclick="setView('front', this)">▢ Front (A)</button>
+  <button onclick="setView('top', this)">⬜ Top Plan</button>
+  <button onclick="setView('wallA', this)">▢ Wall A (head-on)</button>
   <button onclick="setView('side', this)">▮ Side (Slope)</button>
-  <button onclick="setView('eye', this)">👁 Eye-Level</button>
+  <button onclick="setView('camera', this)" class="highlight">📷 Camera View</button>
+  <button onclick="togglePeople(this)" class="active">👥 People</button>
   <button onclick="toggleRoof(this)">⌂ Toggle Roof</button>
   <button onclick="toggleAutoRotate(this)">↻ Auto-Rotate</button>
 </div>
@@ -87,64 +81,121 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 // ============== GEOMETRY ==============
-const CEILING_Y = 1.83;
 const SLOPE_DEG = 5;
 const SLOPE_RAD = SLOPE_DEG * Math.PI / 180;
 const SIN_A = Math.sin(SLOPE_RAD);
 const COS_A = Math.cos(SLOPE_RAD);
 
-// Floor: single tilted plane (rigid rotation around V1-V2 / x-axis)
+// Floor (rigid rotation around V1-V2 axis preserves all edge lengths exactly)
 const V1 = new THREE.Vector3(0, 0, 0);
 const V2 = new THREE.Vector3(2.83, 0, 0);
 const V3 = new THREE.Vector3(4.995, 3.75 * SIN_A, 3.75 * COS_A);
 const V4 = new THREE.Vector3(0.071, 2.882 * SIN_A, 2.882 * COS_A);
 
-// Ceiling flat at y=1.83
-const T1 = new THREE.Vector3(V1.x, CEILING_Y, V1.z);
-const T2 = new THREE.Vector3(V2.x, CEILING_Y, V2.z);
-const T3 = new THREE.Vector3(V3.x, CEILING_Y, V3.z);
-const T4 = new THREE.Vector3(V4.x, CEILING_Y, V4.z);
+// Wall C: simple rectangle (top corners directly above V1, V2 at height 1.83m)
+const T1 = new THREE.Vector3(V1.x, V1.y + 1.83, V1.z);
+const T2 = new THREE.Vector3(V2.x, V2.y + 1.83, V2.z);
 
-// Wall heights (for display)
-const H_V1 = CEILING_Y - V1.y;  // 1.83
-const H_V2 = CEILING_Y - V2.y;  // 1.83
-const H_V3 = CEILING_Y - V3.y;  // ~1.50
-const H_V4 = CEILING_Y - V4.y;  // ~1.58
+// Helper: given anchors A, B on a wall plane, and the 3rd point P such that
+// |P-A|=distA, |P-B|=distB, P lies on the plane — find P on the "up" side.
+function solveOnPlane(A, B, distA, distB, planeNormal) {
+  const u = B.clone().sub(A);
+  const d = u.length();
+  u.divideScalar(d);
+  let v = new THREE.Vector3().crossVectors(planeNormal, u).normalize();
+  if (v.y < 0) v.negate();  // ensure v points generally upward (world Y positive)
+  // In 2D with A=(0,0), B=(d,0): solve |P-A|^2=distA^2, |P-B|^2=distB^2
+  const px = (distA*distA - distB*distB + d*d) / (2*d);
+  const py = Math.sqrt(Math.max(0, distA*distA - px*px));
+  return A.clone().addScaledVector(u, px).addScaledVector(v, py);
+}
+
+// T3: on Wall A plane (V2, V3, T2). Satisfies |V3-T3|=3 (left edge), |T2-T3|=4.33 (top edge)
+const wallA_n = new THREE.Vector3().crossVectors(
+  V3.clone().sub(V2), T2.clone().sub(V2)
+).normalize();
+const T3 = solveOnPlane(V3, T2, 3.0, 4.33, wallA_n);
+
+// T4: on Wall D plane (V3, V4, T3). Satisfies |V4-T4|=1.83 (left edge), |T3-T4|=5 (top edge)
+const wallD_n = new THREE.Vector3().crossVectors(
+  V4.clone().sub(V3), T3.clone().sub(V3)
+).normalize();
+const T4 = solveOnPlane(V4, T3, 1.83, 5.0, wallD_n);
+
+// Wall A center (for camera targeting)
+const WALL_A_CENTER = new THREE.Vector3(
+  (V2.x + V3.x + T3.x + T2.x) / 4,
+  (V2.y + V3.y + T3.y + T2.y) / 4,
+  (V2.z + V3.z + T3.z + T2.z) / 4
+);
+
+// Camera (filming position) — centered on the open V1-V4 side, at eye level 1.5m above the midpoint
+const V1V4_mid = new THREE.Vector3().addVectors(V1, V4).multiplyScalar(0.5);
+const CAM_POS = new THREE.Vector3(V1V4_mid.x, V1V4_mid.y + 1.5, V1V4_mid.z);
+
+// People positions — both at the back wall (Wall A), one at V2 end, one at V3 end
+function personOnFloor(x, z) {
+  return new THREE.Vector3(x, z * Math.tan(SLOPE_RAD), z);
+}
+const PERSON_V2 = personOnFloor(2.65, 0.35);  // near V2 corner (close to camera)
+const PERSON_V3 = personOnFloor(4.50, 3.30);  // near V3 corner (far from camera)
 
 // ============== SCENE STATE ==============
-let scene, camera, renderer, ceilingMesh;
+let scene, camera, renderer, ceilingMesh, personNear, personFar;
 let axisScene, axisCamera, axisRenderer;
 let isDragging = false, lastX = 0, lastY = 0, lastPinchDist = null;
-let targetTheta = Math.PI * 0.32, targetPhi = Math.PI * 0.40, targetRadius = 13;
+let targetTheta = Math.PI * 0.32, targetPhi = Math.PI * 0.38, targetRadius = 13;
 let theta = targetTheta, phi = targetPhi, radius = targetRadius;
-const camTarget = new THREE.Vector3(2.3, 1.0, 1.9);
+let orbitTarget = new THREE.Vector3(2.3, 1.2, 1.9);
+let targetOrbit = orbitTarget.clone();
 let autoRotate = false;
+let cameraFov = 50, targetFov = 50;
 
 function updateCamera() {
-  theta += (targetTheta - theta) * 0.14;
-  phi   += (targetPhi   - phi)   * 0.14;
-  radius+= (targetRadius- radius)* 0.14;
-  camera.position.x = camTarget.x + radius * Math.sin(phi) * Math.sin(theta);
-  camera.position.y = camTarget.y + radius * Math.cos(phi);
-  camera.position.z = camTarget.z + radius * Math.sin(phi) * Math.cos(theta);
-  camera.lookAt(camTarget);
+  theta  += (targetTheta  - theta)  * 0.14;
+  phi    += (targetPhi    - phi)    * 0.14;
+  radius += (targetRadius - radius) * 0.14;
+  orbitTarget.lerp(targetOrbit, 0.14);
+  cameraFov += (targetFov - cameraFov) * 0.14;
+  camera.fov = cameraFov;
+  camera.updateProjectionMatrix();
+  camera.position.x = orbitTarget.x + radius * Math.sin(phi) * Math.sin(theta);
+  camera.position.y = orbitTarget.y + radius * Math.cos(phi);
+  camera.position.z = orbitTarget.z + radius * Math.sin(phi) * Math.cos(theta);
+  camera.lookAt(orbitTarget);
 }
 
 function setView(type, btn) {
   if (btn) {
     document.querySelectorAll('#view-buttons button').forEach(b => {
-      if (b.textContent.match(/Isometric|Top|Front|Side|Eye/)) b.classList.remove('active');
+      if (b.textContent.match(/Isometric|Top|Wall A|Side|Camera View/)) b.classList.remove('active');
     });
     btn.classList.add('active');
   }
-  if (type === 'iso')   { targetTheta = Math.PI * 0.32; targetPhi = Math.PI * 0.40; targetRadius = 13; }
-  else if (type === 'top')   { targetTheta = 0; targetPhi = 0.01; targetRadius = 10; }
-  else if (type === 'front') { targetTheta = Math.PI; targetPhi = Math.PI / 2.1; targetRadius = 10; }
-  else if (type === 'side')  { targetTheta = Math.PI / 2; targetPhi = Math.PI / 2.1; targetRadius = 12; }
-  else if (type === 'eye')   { targetTheta = Math.PI * 0.1; targetPhi = Math.PI / 1.95; targetRadius = 6; }
+  targetFov = 50;
+  targetOrbit.set(2.3, 1.2, 1.9);
+
+  if (type === 'iso')       { targetTheta = Math.PI * 0.32; targetPhi = Math.PI * 0.38; targetRadius = 13; }
+  else if (type === 'top')  { targetTheta = 0; targetPhi = 0.01; targetRadius = 10; }
+  else if (type === 'wallA'){ targetTheta = Math.PI * 1.15; targetPhi = Math.PI / 2.15; targetRadius = 9; }
+  else if (type === 'side') { targetTheta = Math.PI / 2; targetPhi = Math.PI / 2.1; targetRadius = 12; }
+  else if (type === 'camera') {
+    targetOrbit.copy(WALL_A_CENTER);
+    const delta = new THREE.Vector3().subVectors(CAM_POS, WALL_A_CENTER);
+    targetRadius = delta.length();
+    targetPhi = Math.acos(delta.y / targetRadius);
+    targetTheta = Math.atan2(delta.x, delta.z);
+    targetFov = 60;
+  }
 }
+
 function toggleRoof(btn) { if (ceilingMesh) { ceilingMesh.visible = !ceilingMesh.visible; btn.classList.toggle('active'); } }
 function toggleAutoRotate(btn) { autoRotate = !autoRotate; btn.classList.toggle('active'); }
+function togglePeople(btn) {
+  const vis = !personNear.visible;
+  personNear.visible = vis; personFar.visible = vis;
+  btn.classList.toggle('active');
+}
 
 // ============== HELPERS ==============
 function addSurface(verts, color, opacity = 1, castShadow = true, receiveShadow = true) {
@@ -158,8 +209,7 @@ function addSurface(verts, color, opacity = 1, castShadow = true, receiveShadow 
   geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
   geometry.computeVertexNormals();
   const material = new THREE.MeshStandardMaterial({
-    color, side: THREE.DoubleSide,
-    transparent: opacity < 1, opacity,
+    color, side: THREE.DoubleSide, transparent: opacity < 1, opacity,
     roughness: 0.78, metalness: 0.05
   });
   const mesh = new THREE.Mesh(geometry, material);
@@ -172,7 +222,6 @@ function addEdge(p1, p2, color = 0x0b0b10) {
   const geo = new THREE.BufferGeometry().setFromPoints([p1, p2]);
   scene.add(new THREE.Line(geo, new THREE.LineBasicMaterial({ color })));
 }
-
 function addDashedEdge(p1, p2, color = 0xff7755, dashSize = 0.1, gapSize = 0.06) {
   const geo = new THREE.BufferGeometry().setFromPoints([p1, p2]);
   const mat = new THREE.LineDashedMaterial({ color, dashSize, gapSize });
@@ -202,111 +251,130 @@ function addLabel(text, pos, opts = {}) {
   scene.add(sprite);
 }
 
-// Contour lines on the tilted floor (helps visualize slope)
-function addFloorContours() {
-  const steps = 4;
-  for (let i = 1; i < steps; i++) {
-    const t = i / steps;
-    // Line at constant "distance from V1-V2 axis" on the tilted floor
-    // Parameterized by z-distance = t * avgZ
-    // Actually: on the tilted plane y = z·tan(α), cos α → project
-    // Simplest: interpolate between (V1→V4) and (V2→V3) at parameter t
-    const p1 = new THREE.Vector3().lerpVectors(V1, V4, t);
-    const p2 = new THREE.Vector3().lerpVectors(V2, V3, t);
-    // Lift slightly off the floor so the line is visible
-    p1.y += 0.005; p2.y += 0.005;
-    const geo = new THREE.BufferGeometry().setFromPoints([p1, p2]);
-    scene.add(new THREE.Line(geo, new THREE.LineBasicMaterial({ color: 0x6a4a28, transparent: true, opacity: 0.4 })));
-  }
+function buildPerson(basePos, color = 0xe8d5b0) {
+  const group = new THREE.Group();
+  const PH = 1.7, r = 0.18;
+  const bh = PH - r * 2 - 0.25;
+  const mat = new THREE.MeshStandardMaterial({ color, roughness: 0.7, metalness: 0.1 });
+  const body = new THREE.Mesh(new THREE.CylinderGeometry(r, r * 1.1, bh, 16), mat);
+  body.position.y = bh / 2 + 0.02;
+  body.castShadow = true;
+  group.add(body);
+  const head = new THREE.Mesh(new THREE.SphereGeometry(0.14, 16, 12), mat);
+  head.position.y = bh + 0.16;
+  head.castShadow = true;
+  group.add(head);
+  group.position.copy(basePos);
+  scene.add(group);
+  return group;
+}
+
+function buildCameraMarker(pos) {
+  const group = new THREE.Group();
+  const bodyMat = new THREE.MeshStandardMaterial({ color: 0x2a2a30, roughness: 0.5, metalness: 0.6 });
+  const lensMat = new THREE.MeshStandardMaterial({ color: 0x0a0a0a, roughness: 0.3, metalness: 0.7 });
+  const body = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.18, 0.20), bodyMat);
+  body.castShadow = true;
+  group.add(body);
+  const lens = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.08, 0.13, 20), lensMat);
+  lens.rotation.x = Math.PI / 2;   // local +Z direction
+  lens.position.z = 0.16;
+  lens.castShadow = true;
+  group.add(lens);
+  const vf = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.05, 0.09), bodyMat);
+  vf.position.y = 0.115;
+  group.add(vf);
+  group.position.copy(pos);
+  group.lookAt(WALL_A_CENTER);
+  scene.add(group);
+  return group;
 }
 
 // ============== BUILD ==============
 function buildRoom() {
-  // Floor (single tilted plane)
   addSurface([V1, V2, V3, V4], 0xa88558, 1);
-  addFloorContours();
-
-  // Walls (all vertical sides; walls A and D trapezoidal)
-  addSurface([V1, V2, T2, T1], 0x4A90E2, 0.88);  // C
-  addSurface([V2, V3, T3, T2], 0xE74C3C, 0.88);  // A
-  addSurface([V3, V4, T4, T3], 0x2ECC71, 0.88);  // D
-  ceilingMesh = addSurface([T1, T2, T3, T4], 0xF39C12, 0.35, false, false);
+  addSurface([V1, V2, T2, T1], 0x4A90E2, 0.88);
+  addSurface([V2, V3, T3, T2], 0xE74C3C, 0.88);
+  addSurface([V3, V4, T4, T3], 0x2ECC71, 0.88);
+  ceilingMesh = addSurface([T1, T2, T3, T4], 0xF39C12, 0.38, false, false);
   ceilingMesh.material.depthWrite = false;
 
-  // Edges
   [
     [V1,V2],[V2,V3],[V3,V4],[V4,V1],
     [T1,T2],[T2,T3],[T3,T4],[T4,T1],
     [V1,T1],[V2,T2],[V3,T3],[V4,T4]
   ].forEach(([a,b]) => addEdge(a, b));
 
-  // Wall letter labels
+  // Wall letters
   addLabel('B', new THREE.Vector3(2.0, 0.15, 1.8), { scale: 0.5 });
   addLabel('C', new THREE.Vector3(1.41, 0.92, -0.04), { bg: 'rgba(74,144,226,0.96)', fg: '#fff', scale: 0.5 });
-  addLabel('A', new THREE.Vector3(3.95, 1.0, 1.85),   { bg: 'rgba(231,76,60,0.96)', fg: '#fff', scale: 0.5 });
-  addLabel('D', new THREE.Vector3(2.55, 1.0, 3.35),   { bg: 'rgba(46,204,113,0.96)', fg: '#fff', scale: 0.5 });
+  addLabel('A', new THREE.Vector3(3.95, 1.8, 1.85), { bg: 'rgba(231,76,60,0.96)', fg: '#fff', scale: 0.5 });
+  addLabel('D', new THREE.Vector3(2.55, 1.8, 3.35), { bg: 'rgba(46,204,113,0.96)', fg: '#fff', scale: 0.5 });
 
-  // Corner angles
+  // Wall heights (Ames asymmetry)
+  const hOpts = { bg: 'rgba(0,0,0,0.82)', fg: '#fff', scale: 0.42 };
+  const hTall = { bg: 'rgba(255,110,75,0.92)', fg: '#fff', scale: 0.48 };
+  addLabel('1.83 m', new THREE.Vector3(-0.32, 0.92, 0), hOpts);
+  addLabel('1.83 m', new THREE.Vector3(2.83, 0.92, -0.30), hOpts);
+  addLabel('3 m ▲', new THREE.Vector3(5.35, V3.y + 1.5, 3.75), hTall);
+  addLabel('1.83 m', new THREE.Vector3(-0.36, V4.y + 0.92, 2.88), hOpts);
+
+  // Top edges (corrected!)
+  const tOpts = { bg: 'rgba(46,204,113,0.92)', fg: '#fff', scale: 0.42 };
+  addLabel('top 4.33 m ✓',
+    new THREE.Vector3((T2.x+T3.x)/2 + 0.25, (T2.y+T3.y)/2 + 0.35, (T2.z+T3.z)/2),
+    tOpts);
+  addLabel('top 5 m ✓',
+    new THREE.Vector3((T3.x+T4.x)/2, (T3.y+T4.y)/2 + 0.35, (T3.z+T4.z)/2),
+    tOpts);
+
+  // Floor angles
   const angleOpts = { bg: 'rgba(255,235,130,0.96)', fg: '#1a1a1a', scale: 0.38 };
   addLabel('90°',  new THREE.Vector3(V1.x + 0.3, V1.y + 0.03, V1.z + 0.25), angleOpts);
   addLabel('120°', new THREE.Vector3(V2.x - 0.3, V2.y + 0.03, V2.z + 0.30), angleOpts);
   addLabel('50°',  new THREE.Vector3(V3.x - 0.35, V3.y + 0.03, V3.z - 0.35), angleOpts);
   addLabel('100°', new THREE.Vector3(V4.x + 0.40, V4.y + 0.03, V4.z - 0.30), angleOpts);
 
-  // Dimension labels
-  const dimOK   = { bg: 'rgba(46,204,113,0.88)', fg: '#fff', scale: 0.42 };
-  const dimWarn = { bg: 'rgba(255,110,75,0.92)', fg: '#fff', scale: 0.42 };
-  const dimBase = { bg: 'rgba(0,0,0,0.82)', fg: '#fff', scale: 0.42 };
-
-  // Floor edges (labeled at mid-points, under the floor)
-  addLabel('2.83 m', new THREE.Vector3(1.41, -0.30, 0),    dimBase);
-  addLabel('4.33 m top', new THREE.Vector3(3.95, CEILING_Y + 0.28, 1.87), dimOK);
-  addLabel('5 m top',    new THREE.Vector3(2.55, CEILING_Y + 0.28, 3.35), { ...dimOK, scale: 0.4 });
-  addLabel('~2.88 m',new THREE.Vector3(-0.15, -0.30, 1.44), dimBase);
-
-  // Wall heights (vertical)
-  addLabel('1.83 m', new THREE.Vector3(-0.32, 0.92, 0),        dimOK);          // V1
-  addLabel('1.50 m', new THREE.Vector3(5.35, (V3.y+CEILING_Y)/2, 3.75),  dimWarn);  // V3 (was 3m!)
-  addLabel('1.58 m', new THREE.Vector3(-0.35, (V4.y+CEILING_Y)/2, 2.882), dimWarn); // V4 (was 1.83m)
+  // Floor edges
+  const dOpts = { bg: 'rgba(0,0,0,0.78)', fg: '#fff', scale: 0.42 };
+  addLabel('2.83 m', new THREE.Vector3(1.41, -0.30, 0), dOpts);
+  addLabel('4.33 m', new THREE.Vector3(4.2, -0.30, 1.87), dOpts);
+  addLabel('5 m',    new THREE.Vector3(2.55, -0.30, 3.45), { ...dOpts, scale: 0.4 });
 }
 
 function buildSlopeIndicator() {
-  // Wedge showing the 5° angle
-  const wedgeX = 2.0;
-  const L = 1.5;
+  const wedgeX = 2.0, L = 1.3;
   const A = new THREE.Vector3(wedgeX, 0, 0);
   const B = new THREE.Vector3(wedgeX, 0, L);
   const C = new THREE.Vector3(wedgeX, L * SIN_A, L * COS_A);
-
-  const wedgeGeo = new THREE.BufferGeometry();
-  wedgeGeo.setAttribute('position', new THREE.Float32BufferAttribute([
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute([
     A.x,A.y,A.z, B.x,B.y,B.z, C.x,C.y,C.z
   ], 3));
-  wedgeGeo.computeVertexNormals();
-  scene.add(new THREE.Mesh(wedgeGeo, new THREE.MeshBasicMaterial({
-    color: 0xff7755, transparent: true, opacity: 0.35, side: THREE.DoubleSide
-  })));
-
+  g.computeVertexNormals();
+  scene.add(new THREE.Mesh(g, new THREE.MeshBasicMaterial({ color: 0xff7755, transparent: true, opacity: 0.3, side: THREE.DoubleSide })));
   addEdge(A, B, 0xff7755);
   addEdge(A, C, 0xff7755);
   addDashedEdge(B, C, 0xff7755, 0.05, 0.035);
+  addLabel('5°', new THREE.Vector3(wedgeX, 0.08, 0.4), { bg: 'rgba(255,110,75,0.97)', fg: '#fff', scale: 0.30 });
+}
 
-  addLabel('5°', new THREE.Vector3(wedgeX, 0.10, 0.45), {
-    bg: 'rgba(255,110,75,0.97)', fg: '#fff', scale: 0.32
+function buildPeople() {
+  personNear = buildPerson(PERSON_V2, 0xf5cc9f);
+  personFar  = buildPerson(PERSON_V3, 0xf5cc9f);
+
+  addLabel('Person 1.7 m', new THREE.Vector3(PERSON_V2.x - 0.2, PERSON_V2.y + 1.85, PERSON_V2.z), {
+    bg: 'rgba(30,30,40,0.9)', fg: '#fff', scale: 0.58
   });
-
-  // Dashed verticals at V3, V4 showing rise
-  const V3f = new THREE.Vector3(V3.x, 0, V3.z);
-  const V4f = new THREE.Vector3(V4.x, 0, V4.z);
-  addDashedEdge(V3f, V3, 0xff7755);
-  addDashedEdge(V4f, V4, 0xff7755);
-  addDashedEdge(V3f, V4f, 0xff7755);  // reference line where floor "would be" flat
-
-  addLabel('↑ 0.33 m', new THREE.Vector3(V3.x + 0.65, V3.y / 2, V3.z - 0.1), {
-    bg: 'rgba(255,110,75,0.93)', fg: '#fff', scale: 0.5
+  addLabel('Person 1.7 m', new THREE.Vector3(PERSON_V3.x - 0.2, PERSON_V3.y + 1.85, PERSON_V3.z), {
+    bg: 'rgba(30,30,40,0.9)', fg: '#fff', scale: 0.58
   });
-  addLabel('↑ 0.25 m', new THREE.Vector3(V4.x - 0.55, V4.y / 2, V4.z), {
-    bg: 'rgba(255,110,75,0.93)', fg: '#fff', scale: 0.5
+}
+
+function buildCamera() {
+  buildCameraMarker(CAM_POS);
+  addLabel('📷 Camera', new THREE.Vector3(CAM_POS.x - 0.4, CAM_POS.y + 0.30, CAM_POS.z), {
+    bg: 'rgba(60,60,70,0.96)', fg: '#fff', scale: 0.6
   });
 }
 
@@ -317,16 +385,13 @@ function buildAxisHelper() {
   axisRenderer.setSize(80, 80);
   axisRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   container.appendChild(axisRenderer.domElement);
-
   axisScene = new THREE.Scene();
   axisCamera = new THREE.PerspectiveCamera(50, 1, 0.1, 10);
-
-  const axes = [
+  [
     { dir: new THREE.Vector3(1,0,0), color: 0xff5566, label: 'X' },
     { dir: new THREE.Vector3(0,1,0), color: 0x66dd66, label: 'Y' },
     { dir: new THREE.Vector3(0,0,1), color: 0x5588ff, label: 'Z' }
-  ];
-  axes.forEach(({dir, color, label}) => {
+  ].forEach(({dir, color, label}) => {
     const geo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,0,0), dir]);
     axisScene.add(new THREE.Line(geo, new THREE.LineBasicMaterial({ color })));
     const canvas = document.createElement('canvas');
@@ -356,7 +421,6 @@ function updateAxisHelper() {
 // ============== INIT ==============
 function init() {
   scene = new THREE.Scene();
-
   const skyC = document.createElement('canvas');
   skyC.width = 2; skyC.height = 256;
   const sCtx = skyC.getContext('2d');
@@ -364,9 +428,9 @@ function init() {
   g.addColorStop(0, '#1a1f2e'); g.addColorStop(0.5, '#12141c'); g.addColorStop(1, '#08090c');
   sCtx.fillStyle = g; sCtx.fillRect(0, 0, 2, 256);
   scene.background = new THREE.CanvasTexture(skyC);
-  scene.fog = new THREE.Fog(0x12141c, 22, 42);
+  scene.fog = new THREE.Fog(0x12141c, 24, 45);
 
-  camera = new THREE.PerspectiveCamera(48, window.innerWidth / window.innerHeight, 0.1, 100);
+  camera = new THREE.PerspectiveCamera(cameraFov, window.innerWidth / window.innerHeight, 0.1, 100);
   updateCamera();
 
   renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -379,7 +443,6 @@ function init() {
 
   scene.add(new THREE.AmbientLight(0x8899bb, 0.32));
   scene.add(new THREE.HemisphereLight(0xeef6ff, 0x332a20, 0.42));
-
   const key = new THREE.DirectionalLight(0xfff4e0, 1.05);
   key.position.set(6, 11, 5);
   key.castShadow = true;
@@ -387,27 +450,23 @@ function init() {
   Object.assign(key.shadow.camera, { near: 0.5, far: 30, left: -10, right: 10, top: 10, bottom: -10 });
   key.shadow.bias = -0.0005;
   scene.add(key);
-
   const rim = new THREE.DirectionalLight(0x88aaff, 0.35);
   rim.position.set(-5, 4, -4);
   scene.add(rim);
 
-  // Ground shadow catcher
-  const ground = new THREE.Mesh(
-    new THREE.PlaneGeometry(28, 28),
-    new THREE.ShadowMaterial({ opacity: 0.28 })
-  );
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(28, 28), new THREE.ShadowMaterial({ opacity: 0.28 }));
   ground.rotation.x = -Math.PI / 2;
   ground.position.y = -0.01;
   ground.receiveShadow = true;
   scene.add(ground);
-
   const grid = new THREE.GridHelper(14, 28, 0x2a2e3c, 0x1a1c26);
   grid.position.y = -0.005;
   scene.add(grid);
 
   buildRoom();
   buildSlopeIndicator();
+  buildPeople();
+  buildCamera();
   buildAxisHelper();
   setupControls();
   window.addEventListener('resize', onResize);
@@ -426,11 +485,27 @@ function setupControls() {
   });
   c.addEventListener('mouseup', () => isDragging = false);
   c.addEventListener('mouseleave', () => isDragging = false);
+  // Wheel handles BOTH mouse scroll AND trackpad pinch.
+  // Trackpad pinch gestures are delivered by the browser as wheel events with ctrlKey=true
+  // and very small deltaY values — so we need different sensitivity for each case.
   c.addEventListener('wheel', (e) => {
     e.preventDefault();
-    targetRadius *= (1 + e.deltaY * 0.001);
-    targetRadius = Math.max(2, Math.min(30, targetRadius));
+    const factor = e.ctrlKey ? 0.02 : 0.0012;
+    targetRadius *= (1 + e.deltaY * factor);
+    targetRadius = Math.max(1.5, Math.min(30, targetRadius));
   }, { passive: false });
+
+  // Safari-specific pinch gesture events (extra coverage on Mac Safari)
+  let gestureStartRadius = targetRadius;
+  c.addEventListener('gesturestart', (e) => {
+    e.preventDefault();
+    gestureStartRadius = targetRadius;
+  });
+  c.addEventListener('gesturechange', (e) => {
+    e.preventDefault();
+    targetRadius = Math.max(1.5, Math.min(30, gestureStartRadius / e.scale));
+  });
+  c.addEventListener('gestureend', (e) => e.preventDefault());
 
   c.addEventListener('touchstart', (e) => {
     if (e.touches.length === 1) { isDragging = true; lastX = e.touches[0].clientX; lastY = e.touches[0].clientY; }
@@ -454,7 +529,7 @@ function setupControls() {
       const d = Math.sqrt(dx*dx + dy*dy);
       if (lastPinchDist) {
         targetRadius *= lastPinchDist / d;
-        targetRadius = Math.max(2, Math.min(30, targetRadius));
+        targetRadius = Math.max(1.5, Math.min(30, targetRadius));
       }
       lastPinchDist = d;
     }
